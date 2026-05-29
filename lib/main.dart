@@ -5,10 +5,14 @@ import 'package:provider/provider.dart';
 
 import 'core/api/api_client.dart';
 import 'core/api/auth_api.dart';
+import 'core/api/dashboard_api.dart';
+import 'core/api/owner_api.dart';
 import 'core/auth/auth_state.dart';
 import 'core/auth/auth_storage.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
+import 'features/customer/state/customer_home_store.dart';
+import 'features/owner/state/owner_dashboard_store.dart';
 import 'shared/navigation/app_router.dart';
 
 void main() {
@@ -36,6 +40,8 @@ class SikkaApp extends StatefulWidget {
 class _SikkaAppState extends State<SikkaApp> {
   AuthState? _authState;
   AuthApi? _authApi;
+  DashboardApi? _dashboardApi;
+  OwnerApi? _ownerApi;
 
   @override
   void initState() {
@@ -52,11 +58,15 @@ class _SikkaAppState extends State<SikkaApp> {
     }
     final apiClient = ApiClient(tokenProvider: () => authState.accessToken);
     final authApi = AuthApi(apiClient);
+    final dashboardApi = DashboardApi(apiClient);
+    final ownerApi = OwnerApi(apiClient);
 
     if (!mounted) return;
     setState(() {
       _authState = authState;
       _authApi = authApi;
+      _dashboardApi = dashboardApi;
+      _ownerApi = ownerApi;
     });
   }
 
@@ -68,7 +78,12 @@ class _SikkaAppState extends State<SikkaApp> {
 
     final authState = _authState;
     final authApi = _authApi;
-    if (authState == null || authApi == null) {
+    final dashboardApi = _dashboardApi;
+    final ownerApi = _ownerApi;
+    if (authState == null ||
+        authApi == null ||
+        dashboardApi == null ||
+        ownerApi == null) {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: theme,
@@ -88,6 +103,20 @@ class _SikkaAppState extends State<SikkaApp> {
         Provider<AuthApi>(
           create: (_) => authApi,
           lazy: false,
+        ),
+        Provider<DashboardApi>(
+          create: (_) => dashboardApi,
+          lazy: false,
+        ),
+        Provider<OwnerApi>(
+          create: (_) => ownerApi,
+          lazy: false,
+        ),
+        ChangeNotifierProvider<CustomerHomeStore>(
+          create: (ctx) => CustomerHomeStore(ctx.read<DashboardApi>()),
+        ),
+        ChangeNotifierProvider<OwnerDashboardStore>(
+          create: (ctx) => OwnerDashboardStore(ctx.read<OwnerApi>()),
         ),
       ],
       child: MaterialApp(

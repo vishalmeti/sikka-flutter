@@ -224,63 +224,63 @@ class WalletScreen extends StatelessWidget {
           const SizedBox(height: 14),
           SizedBox(
             height: 14,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // Background track
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 4,
-                  child: Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceHi,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
-                ),
-                // Fill
-                Positioned(
-                  left: 0,
-                  top: 4,
-                  child: LayoutBuilder(
-                    builder: (_, constraints) {
-                      return FractionallySizedBox(
-                        widthFactor: 1,
-                        child: Container(
-                          height: 6,
-                          width: pct * 300,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [AppColors.bronze, AppColors.silver, AppColors.gold],
-                              stops: [0, 0.6, 1],
-                            ),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final trackWidth = constraints.maxWidth;
+                final fillWidth =
+                    (pct * trackWidth).clamp(0.0, trackWidth).toDouble();
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    // Background track
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: 4,
+                      child: Container(
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceHi,
+                          borderRadius: BorderRadius.circular(3),
                         ),
-                      );
-                    },
-                  ),
-                ),
-                // Current marker
-                Positioned(
-                  left: pct * 300 - 7,
-                  top: 0,
-                  child: Container(
-                    width: 14,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: AppColors.bg,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.gold, width: 2),
-                      boxShadow: [
-                        BoxShadow(color: AppColors.goldDim, blurRadius: 10),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              ],
+                    // Fill
+                    Positioned(
+                      left: 0,
+                      top: 4,
+                      child: Container(
+                        height: 6,
+                        width: fillWidth,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [AppColors.bronze, AppColors.silver, AppColors.gold],
+                            stops: [0, 0.6, 1],
+                          ),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ),
+                    // Current marker
+                    Positioned(
+                      left: (fillWidth - 7).clamp(0.0, trackWidth - 14).toDouble(),
+                      top: 0,
+                      child: Container(
+                        width: 14,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: AppColors.bg,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.gold, width: 2),
+                          boxShadow: [
+                            BoxShadow(color: AppColors.goldDim, blurRadius: 10),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
           const SizedBox(height: 12),

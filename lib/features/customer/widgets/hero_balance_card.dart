@@ -8,12 +8,18 @@ import '../../../shared/widgets/widgets.dart';
 class HeroBalanceCard extends StatefulWidget {
   const HeroBalanceCard({
     super.key,
-    this.coins = 1247,
-    this.monthlyProgress = 0.68,
+    this.coins = 0,
+    this.progress = 0,
+    this.redeemRate = 2,
   });
 
   final int coins;
-  final double monthlyProgress;
+
+  /// Progress toward the next tier, 0..1.
+  final double progress;
+
+  /// Coins per ₹1 (backend REDEEM_RATE). Rupee value = coins / redeemRate.
+  final double redeemRate;
 
   @override
   State<HeroBalanceCard> createState() => _HeroBalanceCardState();
@@ -37,6 +43,13 @@ class _HeroBalanceCardState extends State<HeroBalanceCard>
     _spin.dispose();
     super.dispose();
   }
+
+  int get _rupeeValue =>
+      widget.redeemRate > 0 ? (widget.coins / widget.redeemRate).floor() : 0;
+
+  String get _progressLabel => widget.progress >= 1
+      ? 'Top tier reached'
+      : '${(widget.progress * 100).round()}% to next tier';
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +108,7 @@ class _HeroBalanceCardState extends State<HeroBalanceCard>
               height: 300,
               child: CustomPaint(
                 painter: _ProgressArcPainter(
-                  progress: widget.monthlyProgress,
+                  progress: widget.progress,
                   color: AppColors.gold,
                   bgColor: AppColors.border,
                 ),
@@ -121,7 +134,7 @@ class _HeroBalanceCardState extends State<HeroBalanceCard>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '≈ ${fmtRupee((widget.coins * 0.2).floor())}',
+                    '≈ ${fmtRupee(_rupeeValue)}',
                     style: AppTypography.mono,
                   ),
                   Text(
@@ -129,7 +142,7 @@ class _HeroBalanceCardState extends State<HeroBalanceCard>
                     style: TextStyle(color: AppColors.muted, fontSize: 13),
                   ),
                   Text(
-                    '${(widget.monthlyProgress * 100).round()}% of monthly target',
+                    _progressLabel,
                     style: AppTypography.mono,
                   ),
                 ],
