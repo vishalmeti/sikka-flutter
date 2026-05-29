@@ -4,7 +4,7 @@ import '../widgets/widgets.dart';
 import '../../features/customer/screens/home_screen.dart';
 import '../../features/customer/screens/scan_screen.dart';
 import '../../features/customer/screens/wallet_screen.dart';
-import '../../features/customer/screens/referrals_screen.dart';
+import '../../features/customer/screens/you_screen.dart';
 
 class CustomerShell extends StatefulWidget {
   const CustomerShell({super.key});
@@ -35,7 +35,7 @@ class _CustomerShellState extends State<CustomerShell> {
     final screens = const [
       HomeScreen(),
       WalletScreen(),
-      ReferralsScreen(),
+      YouScreen(),
     ];
 
     // Map tab index to nav bar highlight index

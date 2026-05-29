@@ -16,7 +16,7 @@ lib/
     utils/             # Formatters (Indian number format, rupee)
   features/            # Feature modules (screens + widgets)
     onboarding/        # Welcome, Login, Register screens
-    customer/          # Home, Scan, Wallet, Redeem, Referrals
+    customer/          # Home, Scan, Wallet, Redeem, You (profile)
     owner/             # Dashboard, Create Offer
   shared/              # Cross-feature code
     widgets/           # Design system widgets (Sk* prefix)
@@ -42,7 +42,7 @@ lib/
 - `/welcome` → Welcome screen (role selection)
 - `/login` → Username + password sign in
 - `/register` → Username + password sign up
-- `/customer` → Customer tab shell (Home, Wallet, Referrals + Scan modal)
+- `/customer` → Customer tab shell (Home, Wallet, You + Scan modal)
 - `/redeem` → Redeem screen
 - `/owner` → Owner dashboard
 - `/create-offer` → Create offer form
