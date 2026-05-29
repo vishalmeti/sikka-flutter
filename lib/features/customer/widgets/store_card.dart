@@ -1,0 +1,84 @@
+import 'package:flutter/material.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/formatters.dart';
+import '../../../shared/widgets/widgets.dart';
+
+class StoreCardData {
+  const StoreCardData({
+    required this.name,
+    required this.tier,
+    required this.coins,
+    required this.progress,
+    required this.visits,
+  });
+
+  final String name;
+  final String tier;
+  final int coins;
+  final double progress;
+  final int visits;
+}
+
+class StoreCard extends StatelessWidget {
+  const StoreCard({super.key, required this.store});
+
+  final StoreCardData store;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 168,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceHi,
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                alignment: Alignment.center,
+                child: const SkIcon(SkIconData.store, size: 16, color: AppColors.textDim),
+              ),
+              SkTierRing(
+                tier: store.tier,
+                size: 36,
+                progress: store.progress,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            store.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppColors.text,
+            ),
+          ),
+          const SizedBox(height: 8),
+          SkBigNumber(fmtNumber(store.coins), size: 28, color: AppColors.gold),
+          const SizedBox(height: 6),
+          Text(
+            'SIKKA • ${store.visits} VISITS',
+            style: AppTypography.label,
+          ),
+        ],
+      ),
+    );
+  }
+}
