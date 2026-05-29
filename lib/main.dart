@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import 'core/api/api_client.dart';
+import 'core/api/api_exception.dart';
 import 'core/api/auth_api.dart';
 import 'core/api/dashboard_api.dart';
 import 'core/api/owner_api.dart';
@@ -56,8 +57,15 @@ class _SikkaAppState extends State<SikkaApp> {
     } catch (e, st) {
       debugPrint('Auth bootstrap failed: $e\n$st');
     }
-    final apiClient = ApiClient(tokenProvider: () => authState.accessToken);
-    final authApi = AuthApi(apiClient);
+    // AuthApi talks to the public + refresh endpoints, so it uses a bare client
+    // with no auto-refresh — that also stops the refresh call from recursing
+    // back into a refresh. Feature APIs use a client that silently refreshes a
+    // 401'd access token and replays the request.
+    final authApi = AuthApi(ApiClient());
+    final apiClient = ApiClient(
+      tokenProvider: () => authState.accessToken,
+      onRefresh: () => _refreshSession(authApi, authState),
+    );
     final dashboardApi = DashboardApi(apiClient);
     final ownerApi = OwnerApi(apiClient);
 
@@ -123,6 +131,7 @@ class _SikkaAppState extends State<SikkaApp> {
         title: 'Sikka',
         debugShowCheckedModeBanner: false,
         theme: theme,
+        navigatorKey: AppRouter.navigatorKey,
         initialRoute: _pickInitialRoute(authState),
         onGenerateRoute: AppRouter.onGenerateRoute,
       ),
@@ -135,4 +144,32 @@ class _SikkaAppState extends State<SikkaApp> {
     }
     return '/welcome';
   }
+}
+
+/// Exchanges the stored refresh token for a new access token. Returns true when
+/// the session was renewed (the next request can retry), false when it could
+/// not be — in which case the user is signed out and sent back to /welcome.
+Future<bool> _refreshSession(AuthApi authApi, AuthState authState) async {
+  final refreshToken = authState.refreshToken;
+  if (refreshToken == null || refreshToken.isEmpty) {
+    await _expireSession(authState);
+    return false;
+  }
+  try {
+    final tokens = await authApi.refresh(refreshToken);
+    await authState.updateTokens(
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    );
+    return true;
+  } on ApiException {
+    await _expireSession(authState);
+    return false;
+  }
+}
+
+Future<void> _expireSession(AuthState authState) async {
+  await authState.signOut();
+  AppRouter.navigatorKey.currentState
+      ?.pushNamedAndRemoveUntil('/welcome', (_) => false);
 }

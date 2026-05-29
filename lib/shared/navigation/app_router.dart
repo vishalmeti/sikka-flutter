@@ -8,6 +8,12 @@ import '../../features/owner/screens/create_offer_screen.dart';
 import 'customer_shell.dart';
 
 class AppRouter {
+  /// Lets non-widget code (e.g. the API client's session-expiry handler)
+  /// drive navigation, since routing here is imperative rather than
+  /// auth-state driven.
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
+
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/':

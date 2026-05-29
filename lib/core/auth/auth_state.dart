@@ -53,6 +53,21 @@ class AuthState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Replace just the tokens after a silent refresh, keeping the signed-in
+  /// user. The access token is short-lived; the refresh token rotates.
+  Future<void> updateTokens({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    _accessToken = accessToken;
+    _refreshToken = refreshToken;
+    await _storage.saveTokens(
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    );
+    notifyListeners();
+  }
+
   Future<void> signOut() async {
     _accessToken = null;
     _refreshToken = null;
