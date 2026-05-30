@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../features/onboarding/screens/loading_screen.dart';
 import '../../features/onboarding/screens/welcome_screen.dart';
 import '../../features/onboarding/screens/login_screen.dart';
 import '../../features/onboarding/screens/register_screen.dart';
@@ -23,6 +24,9 @@ class AppRouter {
         return _build(const LoginScreen());
       case '/register':
         return _build(const RegisterScreen());
+      case '/loading':
+        final args = settings.arguments as Map<String, dynamic>?;
+        return _build(LoadingScreen(message: args?['message'] as String?));
       case '/customer':
         return _build(const CustomerShell());
       case '/redeem':
