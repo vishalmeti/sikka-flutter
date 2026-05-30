@@ -31,6 +31,7 @@ enum SkIconData {
   copy,
   search,
   chart,
+  pencil,
 }
 
 class SkIcon extends StatelessWidget {
@@ -390,6 +391,18 @@ class _SkIconPainter extends CustomPainter {
         canvas.drawLine(const Offset(6, 14), const Offset(6, 18), paint);
         canvas.drawLine(const Offset(12, 9), const Offset(12, 18), paint);
         canvas.drawLine(const Offset(18, 5), const Offset(18, 18), paint);
+
+      case SkIconData.pencil:
+        paint.strokeWidth = 1.6;
+        final body = Path()
+          ..moveTo(4, 20)
+          ..lineTo(4, 16.5)
+          ..lineTo(15.5, 5)
+          ..lineTo(19, 8.5)
+          ..lineTo(7.5, 20)
+          ..close();
+        canvas.drawPath(body, paint);
+        canvas.drawLine(const Offset(13.5, 7), const Offset(17, 10.5), paint);
     }
 
     canvas.restore();
