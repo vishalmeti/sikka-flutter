@@ -15,11 +15,17 @@ class SkAvatar extends StatelessWidget {
   final Color? bgColor;
 
   String get _initials {
-    final parts = name.split(' ');
+    final parts = name
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return '··';
     if (parts.length >= 2) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
-    return parts[0].substring(0, 2).toUpperCase();
+    final single = parts[0];
+    return (single.length >= 2 ? single.substring(0, 2) : single).toUpperCase();
   }
 
   @override

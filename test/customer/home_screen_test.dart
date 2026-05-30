@@ -17,8 +17,9 @@ void main() {
     api = FakeDashboardApi();
   });
 
-  // The home screen's HeroBalanceCard runs an infinite repeating animation, so
-  // pumpAndSettle would never return. Every test below uses explicit pump()s.
+  // The home screen schedules one-shot tween animations on mount; explicit
+  // pump()s give them just enough time to surface their initial frame without
+  // waiting for the full duration.
 
   testWidgets('shows a loading spinner while the dashboard is in flight', (tester) async {
     api.gate = Completer<CustomerDashboard>(); // never completed → stays loading
@@ -61,7 +62,8 @@ void main() {
     await tester.pumpWidget(wrapHome(store: store));
     await tester.pump();
 
-    expect(find.text('Vishal'), findsOneWidget);
+    // The hero label renders the name inside "Vishal • All stores".
+    expect(find.textContaining('Vishal'), findsOneWidget);
     // Appears in its store card and in the (default) activity row for that store.
     expect(find.text('Sri Lakshmi Stores'), findsWidgets);
     expect(find.text('Anand Kirana'), findsOneWidget);
@@ -101,6 +103,6 @@ void main() {
     }
 
     expect(find.text('Network error'), findsNothing);
-    expect(find.text('Vishal'), findsOneWidget);
+    expect(find.textContaining('Vishal'), findsOneWidget);
   });
 }

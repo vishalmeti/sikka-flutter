@@ -20,6 +20,8 @@ class StoreCardData {
   final int visits;
 }
 
+/// Horizontal store card used in the home "Your Stores" rail.
+/// Sized for the centered-hero (01b) layout — 156px wide, 26px balance.
 class StoreCard extends StatelessWidget {
   const StoreCard({super.key, required this.store});
 
@@ -28,12 +30,12 @@ class StoreCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 168,
-      padding: const EdgeInsets.all(16),
+      width: 156,
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,10 +49,14 @@ class StoreCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.surfaceHi,
                   border: Border.all(color: AppColors.border),
-                  borderRadius: BorderRadius.circular(9),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 alignment: Alignment.center,
-                child: const SkIcon(SkIconData.store, size: 16, color: AppColors.textDim),
+                child: const SkIcon(
+                  SkIconData.store,
+                  size: 16,
+                  color: AppColors.textDim,
+                ),
               ),
               SkTierRing(
                 tier: store.tier,
@@ -59,7 +65,7 @@ class StoreCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Text(
             store.name,
             maxLines: 1,
@@ -70,12 +76,12 @@ class StoreCard extends StatelessWidget {
               color: AppColors.text,
             ),
           ),
-          const SizedBox(height: 8),
-          SkBigNumber(fmtNumber(store.coins), size: 28, color: AppColors.gold),
+          const SizedBox(height: 7),
+          SkBigNumber(fmtNumber(store.coins), size: 26, color: AppColors.gold),
           const SizedBox(height: 6),
           Text(
             'SIKKA • ${store.visits} VISITS',
-            style: AppTypography.label,
+            style: AppTypography.label.copyWith(fontSize: 10.5),
           ),
         ],
       ),

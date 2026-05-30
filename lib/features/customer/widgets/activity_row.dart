@@ -13,17 +13,26 @@ class ActivityData {
     required this.sub,
   });
 
-  final String kind; // 'earn', 'redeem', 'bonus'
+  final String kind; // 'earn' | 'redeem' | 'bonus'
   final String store;
   final int amount;
   final String when;
   final String sub;
 }
 
+/// A single recent-activity row, designed to sit inside a wrapping card.
+/// The caller is responsible for the card surface and horizontal padding;
+/// the row only draws the inter-row divider when [showDivider] is true
+/// (i.e. for every row except the first).
 class ActivityRow extends StatelessWidget {
-  const ActivityRow({super.key, required this.activity});
+  const ActivityRow({
+    super.key,
+    required this.activity,
+    this.showDivider = true,
+  });
 
   final ActivityData activity;
+  final bool showDivider;
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +41,9 @@ class ActivityRow extends StatelessWidget {
     final sign = isEarn ? '+' : '−';
     final tag = activity.kind == 'bonus'
         ? 'Bonus'
-        : activity.kind == 'redeem'
-            ? 'Redeem'
-            : 'Earn';
+        : isEarn
+            ? 'Earned'
+            : 'Redeemed';
 
     final iconData = activity.kind == 'bonus'
         ? SkIconData.zap
@@ -43,24 +52,26 @@ class ActivityRow extends StatelessWidget {
             : SkIconData.arrowDown;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: AppColors.border)),
+      padding: const EdgeInsets.symmetric(vertical: 13),
+      decoration: BoxDecoration(
+        border: showDivider
+            ? const Border(top: BorderSide(color: AppColors.border))
+            : null,
       ),
       child: Row(
         children: [
           Container(
-            width: 36,
-            height: 36,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: AppColors.bg,
               border: Border.all(color: AppColors.border),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
             alignment: Alignment.center,
-            child: SkIcon(iconData, size: 14, color: color),
+            child: SkIcon(iconData, size: 15, color: color),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 13),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,36 +81,20 @@ class ActivityRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.5,
                     fontWeight: FontWeight.w500,
                     color: AppColors.text,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Text(
-                      tag,
-                      style: const TextStyle(fontSize: 11.5, color: AppColors.muted),
-                    ),
-                    Container(
-                      width: 2,
-                      height: 2,
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
-                      decoration: const BoxDecoration(
-                        color: AppColors.muted,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    Flexible(
-                      child: Text(
-                        activity.when,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 11.5, color: AppColors.muted),
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 3),
+                Text(
+                  '$tag • ${activity.when}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    color: AppColors.muted,
+                  ),
                 ),
               ],
             ),
@@ -112,7 +107,7 @@ class ActivityRow extends StatelessWidget {
                 '$sign${fmtNumber(activity.amount)}',
                 style: TextStyle(
                   fontFamily: AppTypography.fontMono,
-                  fontSize: 17,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: color,
                   fontFeatures: const [FontFeature.tabularFigures()],
@@ -121,8 +116,11 @@ class ActivityRow extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                activity.sub.toUpperCase(),
-                style: AppTypography.label.copyWith(fontSize: 10.5),
+                activity.sub,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.muted,
+                ),
               ),
             ],
           ),

@@ -29,6 +29,8 @@ enum SkIconData {
   more,
   whatsapp,
   copy,
+  search,
+  chart,
 }
 
 class SkIcon extends StatelessWidget {
@@ -377,6 +379,17 @@ class _SkIconPainter extends CustomPainter {
         canvas.drawRect(const Rect.fromLTWH(18, 14, 2, 2), paint);
         canvas.drawRect(const Rect.fromLTWH(14, 18, 2, 2), paint);
         canvas.drawRect(const Rect.fromLTWH(18, 18, 2, 2), paint);
+
+      case SkIconData.search:
+        paint.strokeWidth = 1.7;
+        canvas.drawCircle(const Offset(11, 11), 7, paint);
+        canvas.drawLine(const Offset(20, 20), const Offset(16.5, 16.5), paint);
+
+      case SkIconData.chart:
+        paint.strokeWidth = 1.7;
+        canvas.drawLine(const Offset(6, 14), const Offset(6, 18), paint);
+        canvas.drawLine(const Offset(12, 9), const Offset(12, 18), paint);
+        canvas.drawLine(const Offset(18, 5), const Offset(18, 18), paint);
     }
 
     canvas.restore();

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 /// Fades and slides a child into view after an optional delay.
@@ -26,6 +28,7 @@ class _FadeSlideInState extends State<FadeSlideIn>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller =
       AnimationController(vsync: this, duration: widget.duration);
+  Timer? _delayTimer;
 
   @override
   void initState() {
@@ -33,7 +36,7 @@ class _FadeSlideInState extends State<FadeSlideIn>
     if (widget.delay == Duration.zero) {
       _controller.forward();
     } else {
-      Future.delayed(widget.delay, () {
+      _delayTimer = Timer(widget.delay, () {
         if (mounted) _controller.forward();
       });
     }
@@ -41,6 +44,7 @@ class _FadeSlideInState extends State<FadeSlideIn>
 
   @override
   void dispose() {
+    _delayTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
