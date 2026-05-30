@@ -23,6 +23,7 @@ abstract final class AppColors {
   static const Color muted = Color(0xFF6B6A72);
 
   static const Color success = Color(0xFF3DDC84);
+  static const Color successDim = Color(0x293DDC84); // 16%
   static const Color silver = Color(0xFFB8B8C0);
   static const Color bronze = Color(0xFFC57B3D);
 

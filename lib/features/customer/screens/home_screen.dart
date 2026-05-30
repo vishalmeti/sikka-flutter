@@ -181,13 +181,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.coralDim,
+        color: AppColors.successDim,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SkIcon(SkIconData.flame, size: 12, color: AppColors.coral),
+          const Icon(Icons.local_fire_department, size: 14, color: AppColors.coral),
           const SizedBox(width: 5),
           Text(
             '$days',
