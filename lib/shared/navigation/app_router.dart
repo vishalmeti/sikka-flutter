@@ -6,6 +6,7 @@ import '../../features/onboarding/screens/register_screen.dart';
 import '../../features/customer/screens/redeem_screen.dart';
 import '../../features/owner/screens/dashboard_screen.dart';
 import '../../features/owner/screens/create_offer_screen.dart';
+import '../../features/profile/screens/phone_entry_screen.dart';
 import 'customer_shell.dart';
 
 class AppRouter {
@@ -35,6 +36,8 @@ class AppRouter {
         return _build(const DashboardScreen());
       case '/create-offer':
         return _build(const CreateOfferScreen());
+      case '/verify-phone':
+        return _build(const PhoneEntryScreen());
       default:
         return _build(const WelcomeScreen());
     }

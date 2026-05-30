@@ -18,18 +18,30 @@ class UserProfile {
     required this.username,
     this.name,
     required this.role,
+    this.phone,
+    this.phoneVerifiedAt,
   });
 
   final String id;
   final String username;
   final String? name;
   final String role;
+  final String? phone;
+  final DateTime? phoneVerifiedAt;
+
+  bool get isPhoneVerified => phoneVerifiedAt != null && phone != null;
 
   factory UserProfile.fromJson(Map<String, dynamic> j) => UserProfile(
         id: j['id'] as String,
         username: j['username'] as String,
         name: j['name'] as String?,
         role: j['role'] as String,
+        phone: j['phone'] as String?,
+        phoneVerifiedAt: (j['phone_verified_at'] ?? j['phoneVerifiedAt']) is String
+            ? DateTime.tryParse(
+                (j['phone_verified_at'] ?? j['phoneVerifiedAt']) as String,
+              )
+            : null,
       );
 
   Map<String, dynamic> toJson() => {
@@ -37,6 +49,8 @@ class UserProfile {
         'username': username,
         'name': name,
         'role': role,
+        'phone': phone,
+        'phone_verified_at': phoneVerifiedAt?.toIso8601String(),
       };
 }
 

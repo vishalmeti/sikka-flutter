@@ -8,6 +8,7 @@ import 'core/api/api_exception.dart';
 import 'core/api/auth_api.dart';
 import 'core/api/dashboard_api.dart';
 import 'core/api/owner_api.dart';
+import 'core/api/profile_api.dart';
 import 'core/auth/auth_state.dart';
 import 'core/auth/auth_storage.dart';
 import 'core/theme/app_colors.dart';
@@ -43,6 +44,7 @@ class _SikkaAppState extends State<SikkaApp> {
   AuthApi? _authApi;
   DashboardApi? _dashboardApi;
   OwnerApi? _ownerApi;
+  ProfileApi? _profileApi;
 
   @override
   void initState() {
@@ -68,6 +70,7 @@ class _SikkaAppState extends State<SikkaApp> {
     );
     final dashboardApi = DashboardApi(apiClient);
     final ownerApi = OwnerApi(apiClient);
+    final profileApi = ProfileApi(apiClient);
 
     if (!mounted) return;
     setState(() {
@@ -75,6 +78,7 @@ class _SikkaAppState extends State<SikkaApp> {
       _authApi = authApi;
       _dashboardApi = dashboardApi;
       _ownerApi = ownerApi;
+      _profileApi = profileApi;
     });
   }
 
@@ -88,10 +92,12 @@ class _SikkaAppState extends State<SikkaApp> {
     final authApi = _authApi;
     final dashboardApi = _dashboardApi;
     final ownerApi = _ownerApi;
+    final profileApi = _profileApi;
     if (authState == null ||
         authApi == null ||
         dashboardApi == null ||
-        ownerApi == null) {
+        ownerApi == null ||
+        profileApi == null) {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: theme,
@@ -118,6 +124,10 @@ class _SikkaAppState extends State<SikkaApp> {
         ),
         Provider<OwnerApi>(
           create: (_) => ownerApi,
+          lazy: false,
+        ),
+        Provider<ProfileApi>(
+          create: (_) => profileApi,
           lazy: false,
         ),
         ChangeNotifierProvider<CustomerHomeStore>(

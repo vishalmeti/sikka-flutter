@@ -68,6 +68,15 @@ class AuthState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Replace the cached profile (e.g. after a phone-verification round-trip
+  /// returned the freshly-linked phone) and persist it so a relaunch shows
+  /// the new state without another GET /profile.
+  Future<void> updateUser(UserProfile user) async {
+    _user = user;
+    await _storage.saveUser(user);
+    notifyListeners();
+  }
+
   Future<void> signOut() async {
     _accessToken = null;
     _refreshToken = null;

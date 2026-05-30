@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/api/auth_api.dart';
 import '../../../core/api/dashboard_api.dart';
 import '../../../core/auth/auth_state.dart';
 import '../../../core/theme/app_colors.dart';
@@ -59,7 +60,7 @@ class _YouScreenState extends State<YouScreen> {
                         child: _buildHero(
                           name: displayName,
                           initials: initials,
-                          maskedPhone: _maskPhone(user.username),
+                          user: user,
                           progress: data?.overallProgress ?? 1.0,
                           tier: _currentTier(data),
                         ),
@@ -135,7 +136,7 @@ class _YouScreenState extends State<YouScreen> {
   Widget _buildHero({
     required String name,
     required String initials,
-    required String maskedPhone,
+    required UserProfile user,
     required double progress,
     required String tier,
   }) {
@@ -159,14 +160,8 @@ class _YouScreenState extends State<YouScreen> {
               letterSpacing: -0.5,
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            maskedPhone,
-            style: AppTypography.mono.copyWith(
-              fontSize: 13,
-              color: AppColors.muted,
-            ),
-          ),
+          const SizedBox(height: 8),
+          _PhoneStatus(user: user, onVerify: () => _startPhoneVerification(context)),
           const SizedBox(height: 14),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -587,16 +582,8 @@ class _YouScreenState extends State<YouScreen> {
     return (single.length >= 2 ? single.substring(0, 2) : single).toUpperCase();
   }
 
-  /// Render the phone-like username as "+91 98•••••47" if it looks like a
-  /// 10-digit number; otherwise show "@username" verbatim.
-  String _maskPhone(String username) {
-    final digits = username.replaceAll(RegExp(r'\D'), '');
-    if (digits.length >= 8) {
-      final head = digits.substring(0, 2);
-      final tail = digits.substring(digits.length - 2);
-      return '+91 $head•••••$tail';
-    }
-    return '@$username';
+  Future<void> _startPhoneVerification(BuildContext context) async {
+    await Navigator.of(context).pushNamed('/verify-phone');
   }
 
   String _currentTier(CustomerDashboard? data) {
@@ -619,6 +606,103 @@ class _YouScreenState extends State<YouScreen> {
     // No createdAt on UserProfile yet — show a friendly placeholder that
     // matches the design's "Since Jan 2025" treatment.
     return 'Since Jan 2025';
+  }
+}
+
+// ── phone status (verified pill / verify CTA) ──────────────────────────────
+
+class _PhoneStatus extends StatelessWidget {
+  const _PhoneStatus({required this.user, required this.onVerify});
+
+  final UserProfile user;
+  final VoidCallback onVerify;
+
+  @override
+  Widget build(BuildContext context) {
+    if (user.isPhoneVerified) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            _maskPhone(user.phone!),
+            style: AppTypography.mono.copyWith(
+              fontSize: 13,
+              color: AppColors.textDim,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: AppColors.successDim,
+              border: Border.all(color: AppColors.success.withValues(alpha: 0.5)),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SkIcon(SkIconData.check, size: 10, color: AppColors.success),
+                const SizedBox(width: 4),
+                Text(
+                  'VERIFIED',
+                  style: TextStyle(
+                    fontFamily: AppTypography.fontSans,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.0,
+                    color: AppColors.success,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        onTap: onVerify,
+        borderRadius: BorderRadius.circular(999),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.goldFaint,
+            border: Border.all(color: AppColors.goldDim),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SkIcon(SkIconData.phone, size: 13, color: AppColors.gold),
+              const SizedBox(width: 8),
+              Text(
+                'Verify phone',
+                style: TextStyle(
+                  fontFamily: AppTypography.fontSans,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.1,
+                  color: AppColors.gold,
+                ),
+              ),
+              const SizedBox(width: 6),
+              const SkIcon(SkIconData.chevronRight, size: 13, color: AppColors.gold),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  static String _maskPhone(String e164) {
+    final digits = e164.replaceAll(RegExp(r'\D'), '');
+    if (digits.length < 10) return e164;
+    final head = digits.substring(digits.length - 10, digits.length - 8);
+    final tail = digits.substring(digits.length - 2);
+    return '+91 $head•••••$tail';
   }
 }
 

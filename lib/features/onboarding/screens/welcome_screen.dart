@@ -5,13 +5,21 @@ import '../../../core/auth/auth_state.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/sk_coin.dart';
+import '../../../shared/widgets/sk_icons.dart';
 import '../../../shared/widgets/sk_warp_field.dart';
 
 /// Animated welcome screen — a Sikka coin drifting through hyperspace
-/// while gold + indigo streaks fly past. Marketing entry point for the
-/// customer journey; bottom CTAs route into log-in / sign-up.
-class WelcomeScreen extends StatelessWidget {
+/// while gold + indigo streaks fly past. Bottom CTAs route into log-in /
+/// sign-up after the visitor picks Shopper or Store owner.
+class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
+
+  @override
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen> {
+  String _role = 'customer';
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +27,7 @@ class WelcomeScreen extends StatelessWidget {
     final screenH = media.size.height;
     // Tighten the coin a touch on shorter screens so it doesn't crowd CTAs.
     final coinSize = (screenH * 0.30).clamp(196.0, 246.0);
+    final isOwner = _role == 'owner';
 
     return Scaffold(
       backgroundColor: const Color(0xFF050508),
@@ -57,7 +66,16 @@ class WelcomeScreen extends StatelessWidget {
                   const Spacer(),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _RoleSelector(
+                      role: _role,
+                      onChanged: (r) => setState(() => _role = r),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: _CtaRow(
+                      isOwner: isOwner,
                       onLogin: () => _go(context, '/login'),
                       onSignup: () => _go(context, '/register'),
                     ),
@@ -72,7 +90,7 @@ class WelcomeScreen extends StatelessWidget {
   }
 
   void _go(BuildContext context, String route) {
-    context.read<AuthState>().setPendingRole('customer');
+    context.read<AuthState>().setPendingRole(_role);
     Navigator.of(context).pushNamed(route);
   }
 }
@@ -199,9 +217,122 @@ class _Subtitle extends StatelessWidget {
   }
 }
 
-class _CtaRow extends StatelessWidget {
-  const _CtaRow({required this.onLogin, required this.onSignup});
+class _RoleSelector extends StatelessWidget {
+  const _RoleSelector({required this.role, required this.onChanged});
 
+  final String role;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: const Color(0xB814141A), // matches log-in button surface
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.borderHi),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _RoleSegment(
+              label: 'Shopper',
+              icon: SkIconData.user,
+              selected: role == 'customer',
+              accent: AppColors.gold,
+              accentDim: AppColors.goldDim,
+              onTap: () => onChanged('customer'),
+            ),
+          ),
+          Expanded(
+            child: _RoleSegment(
+              label: 'Store owner',
+              icon: SkIconData.store,
+              selected: role == 'owner',
+              accent: AppColors.teal,
+              accentDim: AppColors.tealDim,
+              onTap: () => onChanged('owner'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RoleSegment extends StatelessWidget {
+  const _RoleSegment({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.accent,
+    required this.accentDim,
+    required this.onTap,
+  });
+
+  final String label;
+  final SkIconData icon;
+  final bool selected;
+  final Color accent;
+  final Color accentDim;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          height: 40,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: selected ? accentDim : Colors.transparent,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: selected ? accent : Colors.transparent,
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SkIcon(
+                icon,
+                size: 14,
+                color: selected ? accent : AppColors.textDim,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: AppTypography.fontSans,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.1,
+                  color: selected ? AppColors.text : AppColors.textDim,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CtaRow extends StatelessWidget {
+  const _CtaRow({
+    required this.isOwner,
+    required this.onLogin,
+    required this.onSignup,
+  });
+
+  final bool isOwner;
   final VoidCallback onLogin;
   final VoidCallback onSignup;
 
@@ -211,7 +342,7 @@ class _CtaRow extends StatelessWidget {
       children: [
         Expanded(child: _LoginButton(onTap: onLogin)),
         const SizedBox(width: 12),
-        Expanded(child: _SignupButton(onTap: onSignup)),
+        Expanded(child: _SignupButton(onTap: onSignup, isOwner: isOwner)),
       ],
     );
   }
@@ -253,42 +384,52 @@ class _LoginButton extends StatelessWidget {
 }
 
 class _SignupButton extends StatelessWidget {
-  const _SignupButton({required this.onTap});
+  const _SignupButton({required this.onTap, required this.isOwner});
   final VoidCallback onTap;
+  final bool isOwner;
 
   @override
   Widget build(BuildContext context) {
+    final topColor =
+        isOwner ? const Color(0xFF7AC9B0) : const Color(0xFFE6C66A);
+    final bottomColor = isOwner ? AppColors.teal : AppColors.gold;
+    final shadowColor = isOwner ? AppColors.tealDim : AppColors.goldDim;
+    final textColor =
+        isOwner ? const Color(0xFF07140F) : const Color(0xFF1A1407);
+
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(999),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(999),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
           height: 60,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(999),
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFFE6C66A), AppColors.gold],
+              colors: [topColor, bottomColor],
             ),
-            boxShadow: const [
+            boxShadow: [
               BoxShadow(
-                color: AppColors.goldDim,
+                color: shadowColor,
                 blurRadius: 26,
-                offset: Offset(0, 8),
+                offset: const Offset(0, 8),
               ),
             ],
           ),
-          child: const Text(
+          child: Text(
             'Sign up',
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1A1407),
+              color: textColor,
               letterSpacing: -0.2,
             ),
           ),
