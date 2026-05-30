@@ -17,7 +17,7 @@ class SkBottomNav extends StatelessWidget {
   static const _items = [
     ('Home', SkIconData.home),
     ('Scan', SkIconData.scan),
-    ('Wallet', SkIconData.wallet),
+    ('Stores', SkIconData.store),
     ('You', SkIconData.user),
   ];
 

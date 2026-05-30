@@ -22,14 +22,16 @@ class StoreCardData {
 
 /// Horizontal store card used in the home "Your Stores" rail.
 /// Sized for the centered-hero (01b) layout — 156px wide, 26px balance.
+/// Tap opens the store detail screen via [onTap].
 class StoreCard extends StatelessWidget {
-  const StoreCard({super.key, required this.store});
+  const StoreCard({super.key, required this.store, this.onTap});
 
   final StoreCardData store;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final card = Container(
       width: 156,
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
@@ -84,6 +86,16 @@ class StoreCard extends StatelessWidget {
             style: AppTypography.label.copyWith(fontSize: 10.5),
           ),
         ],
+      ),
+    );
+    if (onTap == null) return card;
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: card,
       ),
     );
   }

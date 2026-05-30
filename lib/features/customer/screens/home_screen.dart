@@ -3,20 +3,26 @@ import 'package:provider/provider.dart';
 
 import '../../../core/api/dashboard_api.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/utils/formatters.dart';
+import '../../../shared/navigation/customer_shell.dart';
 import '../../../shared/widgets/widgets.dart';
+import '../../../core/utils/formatters.dart';
+import '../models/store_catalog.dart';
+import '../models/store_model.dart';
 import '../state/customer_home_store.dart';
 import '../widgets/activity_row.dart';
 import '../widgets/hero_balance_card.dart';
 import '../widgets/store_card.dart';
+import '../widgets/wallet_button.dart';
+import '../widgets/wallet_sheet.dart';
+import 'store_detail_screen.dart';
 
-/// Customer home — centered-hero (01b) layout.
+/// Customer home — centered-hero (01b · Home + Stores) layout.
 ///
 /// Structure (top → bottom):
 ///   • Warm gold radial gradient backdrop (fades into the app bg)
-///   • Search-led top bar (avatar + search field + chart + bell)
+///   • Top bar: avatar · "Search stores" pill · WalletButton
 ///   • Centered balance hero with rupee-value pill + page dots
-///   • Your Stores horizontal scroll
+///   • Your Stores horizontal scroll (tap → detail; all → Stores tab)
 ///   • Recent Activity card with rows + "See all activity"
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -43,6 +49,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _goToStores() => CustomerShell.goToStores(context);
+
+  void _openStore(StoreModel store) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => StoreDetailScreen(store: store)),
+    );
+  }
+
+  void _openWallet(List<StoreModel> enriched, double redeemRate) {
+    WalletSheet.show(
+      context,
+      stores: enriched,
+      redeemRate: redeemRate,
+      onOpenStore: _openStore,
+      onRedeem: () => Navigator.of(context).pushNamed('/redeem'),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final store = context.watch<CustomerHomeStore>();
@@ -63,6 +87,12 @@ class _HomeScreenState extends State<HomeScreen> {
               _TopBar(
                 topPad: topPad,
                 userName: store.data?.userName,
+                total: store.data?.totalCoins ?? 0,
+                onSearch: _goToStores,
+                onOpenWallet: () => _openWallet(
+                  _enrichedStores(store.data),
+                  store.data?.redeemRate ?? 2,
+                ),
               ),
               Expanded(child: _buildBody(store)),
             ],
@@ -70,6 +100,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  List<StoreModel> _enrichedStores(CustomerDashboard? data) {
+    if (data == null || data.stores.isEmpty) {
+      return StoreCatalog.instance.demoStores();
+    }
+    return StoreCatalog.instance.enrichAll(data.stores);
   }
 
   Widget _buildBody(CustomerHomeStore store) {
@@ -152,6 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildContent(CustomerDashboard data) {
+    final enriched = StoreCatalog.instance.enrichAll(data.stores);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -169,10 +207,11 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Your Stores',
             trailing: 'All ${data.stores.length}',
             showChevron: true,
+            onTap: _goToStores,
           ),
         ),
         const SizedBox(height: 13),
-        _StoresRail(stores: data.stores),
+        _StoresRail(stores: enriched, onOpen: _openStore),
         const SizedBox(height: 30),
         FadeSlideIn(
           delay: const Duration(milliseconds: 360),
@@ -236,10 +275,19 @@ class _HeroBackdrop extends StatelessWidget {
 // ── top bar ───────────────────────────────────────────────────────────────
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.topPad, required this.userName});
+  const _TopBar({
+    required this.topPad,
+    required this.userName,
+    required this.total,
+    required this.onSearch,
+    required this.onOpenWallet,
+  });
 
   final double topPad;
   final String? userName;
+  final int total;
+  final VoidCallback onSearch;
+  final VoidCallback onOpenWallet;
 
   @override
   Widget build(BuildContext context) {
@@ -249,11 +297,9 @@ class _TopBar extends StatelessWidget {
         children: [
           _AvatarWithDot(name: userName),
           const SizedBox(width: 10),
-          const Expanded(child: _SearchField()),
+          Expanded(child: _SearchField(onTap: onSearch)),
           const SizedBox(width: 10),
-          const _GlassCircleButton(icon: SkIconData.chart),
-          const SizedBox(width: 10),
-          const _GlassCircleButton(icon: SkIconData.bell),
+          WalletButton(total: total, onTap: onOpenWallet),
         ],
       ),
     );
@@ -290,49 +336,37 @@ class _AvatarWithDot extends StatelessWidget {
 }
 
 class _SearchField extends StatelessWidget {
-  const _SearchField();
+  const _SearchField({required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 38,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: const Color(0x12F0EFE9),
-        border: Border.all(color: AppColors.borderHi),
+    return Material(
+      color: const Color(0x12F0EFE9),
+      borderRadius: BorderRadius.circular(19),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(19),
-      ),
-      child: Row(
-        children: [
-          const SkIcon(SkIconData.search, size: 17, color: AppColors.textDim),
-          const SizedBox(width: 9),
-          Text(
-            'Search stores',
-            style: TextStyle(fontSize: 14, color: AppColors.textDim),
+        child: Container(
+          height: 38,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.borderHi),
+            borderRadius: BorderRadius.circular(19),
           ),
-        ],
+          child: Row(
+            children: [
+              const SkIcon(SkIconData.search, size: 17, color: AppColors.textDim),
+              const SizedBox(width: 9),
+              Text(
+                'Search stores',
+                style: const TextStyle(fontSize: 14, color: AppColors.textDim),
+              ),
+            ],
+          ),
+        ),
       ),
-    );
-  }
-}
-
-class _GlassCircleButton extends StatelessWidget {
-  const _GlassCircleButton({required this.icon});
-
-  final SkIconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 38,
-      height: 38,
-      decoration: BoxDecoration(
-        color: const Color(0x12F0EFE9),
-        border: Border.all(color: AppColors.borderHi),
-        shape: BoxShape.circle,
-      ),
-      alignment: Alignment.center,
-      child: SkIcon(icon, size: 17, color: AppColors.text),
     );
   }
 }
@@ -344,40 +378,53 @@ class _SectionHeader extends StatelessWidget {
     required this.label,
     this.trailing,
     this.showChevron = false,
+    this.onTap,
   });
 
   final String label;
   final String? trailing;
   final bool showChevron;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final hasTrailing = trailing != null;
+    final trailingChild = hasTrailing
+        ? Row(
+            children: [
+              Text(
+                trailing!,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textDim,
+                ),
+              ),
+              if (showChevron) ...[
+                const SizedBox(width: 4),
+                const SkIcon(
+                  SkIconData.chevronRight,
+                  size: 12,
+                  color: AppColors.textDim,
+                ),
+              ],
+            ],
+          )
+        : null;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SkLabel(label),
-          if (trailing != null)
-            Row(
-              children: [
-                Text(
-                  trailing!,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textDim,
+          if (trailingChild != null)
+            onTap == null
+                ? trailingChild
+                : GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: onTap,
+                    child: trailingChild,
                   ),
-                ),
-                if (showChevron) ...[
-                  const SizedBox(width: 4),
-                  const SkIcon(
-                    SkIconData.chevronRight,
-                    size: 12,
-                    color: AppColors.textDim,
-                  ),
-                ],
-              ],
-            ),
         ],
       ),
     );
@@ -387,9 +434,10 @@ class _SectionHeader extends StatelessWidget {
 // ── stores rail ───────────────────────────────────────────────────────────
 
 class _StoresRail extends StatelessWidget {
-  const _StoresRail({required this.stores});
+  const _StoresRail({required this.stores, required this.onOpen});
 
-  final List<DashboardStore> stores;
+  final List<StoreModel> stores;
+  final ValueChanged<StoreModel> onOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -415,9 +463,10 @@ class _StoresRail extends StatelessWidget {
                 name: s.name,
                 tier: s.tier,
                 coins: s.coins,
-                progress: s.tierProgress,
+                progress: s.progress,
                 visits: s.visits,
               ),
+              onTap: () => onOpen(s),
             ),
           );
         },

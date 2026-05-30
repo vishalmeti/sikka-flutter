@@ -32,6 +32,13 @@ enum SkIconData {
   search,
   chart,
   pencil,
+  pin,
+  star,
+  phone,
+  navigation,
+  clock,
+  tag,
+  list,
 }
 
 class SkIcon extends StatelessWidget {
@@ -403,6 +410,98 @@ class _SkIconPainter extends CustomPainter {
           ..close();
         canvas.drawPath(body, paint);
         canvas.drawLine(const Offset(13.5, 7), const Offset(17, 10.5), paint);
+
+      case SkIconData.pin:
+        final outline = Path()
+          ..moveTo(12, 21)
+          ..cubicTo(17, 15.5, 19, 12.5, 19, 9)
+          ..cubicTo(19, 5.13, 15.87, 2, 12, 2)
+          ..cubicTo(8.13, 2, 5, 5.13, 5, 9)
+          ..cubicTo(5, 12.5, 7, 15.5, 12, 21)
+          ..close();
+        canvas.drawPath(outline, paint);
+        canvas.drawCircle(const Offset(12, 9), 2.5, paint);
+
+      case SkIconData.star:
+        paint.style = PaintingStyle.fill;
+        final star = Path()
+          ..moveTo(12, 3)
+          ..lineTo(14.6, 8.3)
+          ..lineTo(20.5, 9.2)
+          ..lineTo(16.2, 13.3)
+          ..lineTo(17.2, 19.1)
+          ..lineTo(12, 16.9)
+          ..lineTo(6.8, 19.2)
+          ..lineTo(7.8, 13.4)
+          ..lineTo(3.5, 9.2)
+          ..lineTo(9.4, 8.3)
+          ..close();
+        canvas.drawPath(star, paint);
+        paint.style = PaintingStyle.stroke;
+
+      case SkIconData.phone:
+        final phone = Path()
+          ..moveTo(5, 4)
+          ..lineTo(8, 4)
+          ..lineTo(10, 9)
+          ..lineTo(7.5, 10.5)
+          ..cubicTo(8.7, 13.1, 10.9, 15.3, 13.5, 16.5)
+          ..lineTo(15, 14)
+          ..lineTo(20, 16)
+          ..lineTo(20, 19)
+          ..cubicTo(20, 20.1, 19.1, 21, 18, 21)
+          ..cubicTo(10.27, 21, 4, 14.73, 4, 7)
+          ..cubicTo(4, 5.9, 4.9, 5, 6, 5)
+          ..close();
+        canvas.drawPath(phone, paint);
+
+      case SkIconData.navigation:
+        paint.style = PaintingStyle.fill;
+        final nav = Path()
+          ..moveTo(21, 3)
+          ..lineTo(3, 10.5)
+          ..lineTo(10, 13)
+          ..lineTo(12.5, 20)
+          ..close();
+        canvas.drawPath(nav, paint);
+        paint.style = PaintingStyle.stroke;
+
+      case SkIconData.clock:
+        canvas.drawCircle(const Offset(12, 12), 9, paint);
+        final hands = Path()
+          ..moveTo(12, 7)
+          ..lineTo(12, 12)
+          ..lineTo(15.5, 14);
+        canvas.drawPath(hands, paint);
+
+      case SkIconData.tag:
+        final tag = Path()
+          ..moveTo(3, 12)
+          ..lineTo(3, 4)
+          ..cubicTo(3, 3.45, 3.45, 3, 4, 3)
+          ..lineTo(12, 3)
+          ..lineTo(21, 12)
+          ..lineTo(12, 21)
+          ..close();
+        canvas.drawPath(tag, paint);
+        canvas.drawCircle(
+          const Offset(7.5, 7.5),
+          1.4,
+          paint..style = PaintingStyle.fill,
+        );
+        paint.style = PaintingStyle.stroke;
+
+      case SkIconData.list:
+        paint.strokeWidth = 1.8;
+        canvas.drawLine(const Offset(8, 6), const Offset(20, 6), paint);
+        canvas.drawLine(const Offset(8, 12), const Offset(20, 12), paint);
+        canvas.drawLine(const Offset(8, 18), const Offset(20, 18), paint);
+        // small bullets
+        paint.style = PaintingStyle.fill;
+        canvas.drawCircle(const Offset(4, 6), 0.9, paint);
+        canvas.drawCircle(const Offset(4, 12), 0.9, paint);
+        canvas.drawCircle(const Offset(4, 18), 0.9, paint);
+        paint.style = PaintingStyle.stroke;
     }
 
     canvas.restore();
