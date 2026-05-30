@@ -82,17 +82,29 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 8),
-        HeroBalanceCard(
-          coins: data.totalCoins,
-          progress: data.overallProgress,
-          redeemRate: data.redeemRate,
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 60),
+          child: HeroBalanceCard(
+            coins: data.totalCoins,
+            progress: data.overallProgress,
+            redeemRate: data.redeemRate,
+          ),
         ),
         const SizedBox(height: 32),
-        _sectionHeader('Your Stores', trailing: 'All ${data.stores.length}'),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 220),
+          child: _sectionHeader(
+            'Your Stores',
+            trailing: 'All ${data.stores.length}',
+          ),
+        ),
         const SizedBox(height: 14),
         _buildStores(data.stores),
         const SizedBox(height: 32),
-        _sectionHeader('Activity', trailing: 'Recent'),
+        FadeSlideIn(
+          delay: const Duration(milliseconds: 360),
+          child: _sectionHeader('Activity', trailing: 'Recent'),
+        ),
         const SizedBox(height: 6),
         _buildActivity(data.activity),
       ],
@@ -112,13 +124,17 @@ class _HomeScreenState extends State<HomeScreen> {
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (_, i) {
           final s = stores[i];
-          return StoreCard(
-            store: StoreCardData(
-              name: s.name,
-              tier: s.tier,
-              coins: s.coins,
-              progress: s.tierProgress,
-              visits: s.visits,
+          return FadeSlideIn(
+            delay: Duration(milliseconds: 260 + i * 90),
+            offset: 24,
+            child: StoreCard(
+              store: StoreCardData(
+                name: s.name,
+                tier: s.tier,
+                coins: s.coins,
+                progress: s.tierProgress,
+                visits: s.visits,
+              ),
             ),
           );
         },
@@ -131,17 +147,22 @@ class _HomeScreenState extends State<HomeScreen> {
       return _emptyHint('No activity yet.');
     }
     return Column(
-      children: activity
-          .map((a) => ActivityRow(
-                activity: ActivityData(
-                  kind: a.kind,
-                  store: a.storeName ?? 'Sikka',
-                  amount: a.coinDelta.abs(),
-                  when: fmtRelativeTime(a.timestamp),
-                  sub: a.label,
-                ),
-              ))
-          .toList(),
+      children: [
+        for (var i = 0; i < activity.length; i++)
+          FadeSlideIn(
+            delay: Duration(milliseconds: 420 + i * 70),
+            offset: 12,
+            child: ActivityRow(
+              activity: ActivityData(
+                kind: activity[i].kind,
+                store: activity[i].storeName ?? 'Sikka',
+                amount: activity[i].coinDelta.abs(),
+                when: fmtRelativeTime(activity[i].timestamp),
+                sub: activity[i].label,
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -168,37 +189,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const Spacer(),
           if (data != null && data.streakDays > 0) ...[
-            _streakPill(data.streakDays),
+            _StreakPill(days: data.streakDays),
             const SizedBox(width: 8),
           ],
           const SkCircleButton(icon: SkIconData.bell),
-        ],
-      ),
-    );
-  }
-
-  Widget _streakPill(int days) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.successDim,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.local_fire_department, size: 14, color: AppColors.coral),
-          const SizedBox(width: 5),
-          Text(
-            '$days',
-            style: TextStyle(
-              fontFamily: AppTypography.fontMono,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.coral,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
         ],
       ),
     );
@@ -258,5 +252,70 @@ class _HomeScreenState extends State<HomeScreen> {
     if (h < 12) return 'GOOD MORNING';
     if (h < 17) return 'GOOD AFTERNOON';
     return 'GOOD EVENING';
+  }
+}
+
+class _StreakPill extends StatefulWidget {
+  const _StreakPill({required this.days});
+
+  final int days;
+
+  @override
+  State<_StreakPill> createState() => _StreakPillState();
+}
+
+class _StreakPillState extends State<_StreakPill>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _flame = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _flame.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.successDim,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedBuilder(
+            animation: _flame,
+            builder: (_, child) {
+              final t = Curves.easeInOut.transform(_flame.value);
+              return Transform.scale(
+                scale: 0.92 + t * 0.16,
+                child: Opacity(opacity: 0.85 + t * 0.15, child: child),
+              );
+            },
+            child: const Icon(
+              Icons.local_fire_department,
+              size: 14,
+              color: AppColors.coral,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            '${widget.days}',
+            style: TextStyle(
+              fontFamily: AppTypography.fontMono,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.coral,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -4,6 +4,7 @@ export 'sk_big_number.dart';
 export 'sk_bottom_nav.dart';
 export 'sk_button.dart';
 export 'sk_card.dart';
+export 'fade_slide_in.dart';
 export 'sk_circle_button.dart';
 export 'sk_coin.dart';
 export 'sk_icons.dart';
